@@ -24,7 +24,7 @@ output "vault_token" {
 #@ VAULT 
 # provider "vault" {
 #   address = "http://127.0.0.1:8200"
-#   token   = "hvs.cb86iN91XY0pHfGLhjWDOoyn"
+#   token   = "var.vault_token"
 #   skip_child_token = true
 # }
 # data "vault_generic_secret" "username" {

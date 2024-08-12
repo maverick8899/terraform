@@ -32,3 +32,6 @@ terraform
 # Windows-specific files
 Thumbs.db
 ehthumbs.db
+*.pem
+*.pub
+vault_volume
