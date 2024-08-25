@@ -1,27 +1,7 @@
-variable "AWS_ACCESS_KEY_ID" {
-  description = "AWS access key ID"
-  type        = string
-  sensitive   = true
-}
 
-variable "AWS_SECRET_ACCESS_KEY" {
-  description = "AWS secret access key"
-  type        = string
-  sensitive   = true
-}
 
-variable "vault_token" {
-  description = "The vault_token for authentication"
-  type        = string
-  sensitive   = true
-}
 
-output "vault_token" {
-  value     = var.vault_token
-  sensitive = true
-}
-
-#@ VAULT 
+#@ VAULT _ temporary fail connection
 # provider "vault" {
 #   address = "http://127.0.0.1:8200"
 #   token   = "var.vault_token"
@@ -34,21 +14,9 @@ output "vault_token" {
 #   value     = data.vault_generic_secret.username
 #   sensitive = true
 # }
-#@ _end_vault ----------------------------------------------------------------
+#@ vault end ----------------------------------------------------------------
 
-provider "aws" {
-  region     = var.REGION
-  access_key = var.AWS_ACCESS_KEY_ID
-  secret_key = var.AWS_SECRET_ACCESS_KEY
-  # profile = "maverick"
-  default_tags {
-    tags = {
-      Owner       = "maverick"
-      Provisioner = "terraform"
-      Environment = terraform.workspace
-    }
-  }
-}
+
 
 variable "AMIS" {
   type = map(any)
@@ -73,6 +41,7 @@ variable "REGION" {
   type        = string
   description = "Region Singapore"
 }
+
 #@ validate, require input value for cloud
 # variable "cloud" {
 #   type = string
@@ -85,14 +54,24 @@ variable "REGION" {
 #     error_message = "The cloud name must not have capital letters."
 #   }
 # }
+#@ validate end --------------------------------
 
 locals {
   zone1 = "${var.REGION}a"
   tags = {
     Name = "module"
   }
+  ingress_rules = [
+    {
+      port        = 443
+      description = "https"
+    },
+    {
+      port        = 80
+      description = "http"
+    }
+  ]
 }
-
 data "aws_region" "current" {}
 data "aws_availability_zones" "availability_zone" {}
 # data "aws_ami" "ubuntu" {
@@ -112,7 +91,7 @@ data "aws_availability_zones" "availability_zone" {}
 
 #?  tạo nhiều instances EC2. Mỗi instance is match corresponding AZ
 # resource "aws_instance" "demo" {]
-  # for_each          = var.EC2_TYPES #? mandatory map
+# for_each          = var.EC2_TYPES #? mandatory map
 #   availability_zone = tolist(data.aws_availability_zones.availability_zone.names)[each.value]
 #   ami               = data.aws_ami.ubuntu.id #var.AMIS[var.REGION]
 #   instance_type     = var.EC2_TYPES[var.REGION]
@@ -145,7 +124,7 @@ module "ec2" {
   instance_type   = "t2.micro"
   key_name        = var.key_name
   connection_user = var.connection_user
-  tags = local.tags
+  tags            = local.tags
 
 }
 #* template module 
@@ -168,5 +147,5 @@ module "ec2" {
 # output "instance_public_dns" {
 #   value = module.ec2.instance_public_dns
 # }
-#@ end MODULE   ----------------------------------------------------
- 
+#@ end MODULE   ---------------------------------------------------- 
+
